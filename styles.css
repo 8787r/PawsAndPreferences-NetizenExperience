@@ -92,3 +92,10 @@ h1 {
   margin: 10px;
   border-radius: 10px;
 }
+
+#progress {
+  text-align: center;
+  margin-top: 10px;
+  font-size: 1rem;
+  color: #333;
+}
