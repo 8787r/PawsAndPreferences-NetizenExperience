@@ -1,46 +1,28 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Paws & Preferences</title>
-  <link rel="stylesheet" href="styles.css" />
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/hammer.js/2.0.8/hammer.min.js"></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Paws & Preferences</title>
+  <link rel="stylesheet" href="styles.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/hammer.js/2.0.8/hammer.min.js"></script>
 </head>
+
 <body>
-  <div id="app">
-    <header class="header">
-      <h1>Paws & Preferences</h1>
-      <div class="controls-top">
-        <button id="dark-toggle" aria-label="Toggle dark mode">🌙</button>
-      </div>
-    </header>
+  <div id="app">
+      
+    <h1>Paws & Preferences</h1>
 
-        <div id="progress-wrap" aria-hidden="true">
-      <div id="progress-line"></div>
-    </div>
+    <div id="card-container"></div>
 
-        <main>
-      <div id="card-container" aria-live="polite"></div>
-    </main>
+    <div id="progress">Cat <span id="current">1</span> / <span id="total">12</span></div>
 
-        <nav id="actions">
-      <button id="undo" class="action-btn" title="Undo (previous card)">↩️</button>
-      <button id="dislike" class="action-btn dislike-btn" title="Dislike (swipe left)">✖️</button>
-      <button id="like" class="action-btn like-btn" title="Like (swipe right)">❤️</button>
-    </nav>
+    <div id="summary" class="hidden">
+      <h2>You liked <span id="like-count"></span> cats!</h2>
+      <div id="liked-images"></div>
+    </div>
+  </div>
 
-    <div id="progress" class="text">Cat <span id="current">1</span> / <span id="total">12</span></div>
-
-    <section id="summary" class="hidden">
-      <h2>You liked <span id="like-count"></span> cats!</h2>
-      <div id="liked-images" class="liked-grid"></div>
-      <div class="summary-actions">
-        <button id="restart">Restart</button>
-      </div>
-    </section>
-  </div>
-
-  <script src="script.js"></script>
+  <script src="script.js"></script>
 </body>
 </html>
