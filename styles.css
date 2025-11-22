@@ -82,27 +82,27 @@ body {
 
 /* each card */
 .card {
-  position: absolute;
-  width: 90%;
-  height: 430px;
-  left: 50%;
-  top: 0;
-  transform: translateX(-50%);
-  border-radius: 16px;
-  background: var(--card-bg);
-  background-size: cover;
-  background-position: center;
-  box-shadow: 0 8px 22px var(--btn-shadow);
-  transition: transform 260ms cubic-bezier(.22,.9,.3,1), opacity 200ms;
-  display:flex;
-  align-items:flex-end;
-  justify-content:center;
-  overflow: hidden;
+  position: absolute;
+  width: 90%;
+  height: 430px;
+  left: 50%;
+  top: 0;
+  transform: translateX(-50%);
+  border-radius: 16px;
+  background: var(--card-bg);
+  background-size: cover;
+  background-position: center;
+  box-shadow: 0 8px 22px var(--btn-shadow);
+  transition: transform 260ms cubic-bezier(.22,.9,.3,1), opacity 200ms;
+  display:flex;
+  align-items:flex-end;
+  justify-content:center;
+  overflow: hidden;
 }
 
-/* stacked offset for visible depth */
-.card:nth-child(2){ transform: translateX(-50%) translateY(8px) scale(0.99); }
-.card:nth-child(3){ transform: translateX(-50%) translateY(16px) scale(0.98); }
+/* stacked offset for visible depth - FIXED: use :nth-last-child() */
+.card:nth-last-child(2){ transform: translateX(-50%) translateY(8px) scale(0.99); }
+.card:nth-last-child(3){ transform: translateX(-50%) translateY(16px) scale(0.98); }
 
 /* overlay label */
 .label {
@@ -153,6 +153,7 @@ body {
   transition: transform 120ms ease, box-shadow 120ms;
 }
 .action-btn:active{ transform: scale(.96); }
+.action-btn:disabled{ opacity: 0.5; cursor: not-allowed; transform: none; }
 .like-btn{ background: linear-gradient(180deg,var(--accent-like), #2fbf7a); color:white;}
 .dislike-btn{ background: linear-gradient(180deg,#f06a77,var(--accent-dislike)); color:white; }
 #undo{ font-size:1.2rem; }
