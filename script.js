@@ -44,57 +44,56 @@ function renderCards() {
     let initialX = 0, initialY = 0;
 
     mc.on("panstart", (ev) => {
-      initialX = ev.deltaX;
-      initialY = ev.deltaY;
-      // remove transition so it moves smoothly
-      card.style.transition = "none";
+      card.style.transition = "none"; // move smoothly
     });
 
     mc.on("panmove", (ev) => {
       const deltaX = ev.deltaX;
       const deltaY = ev.deltaY;
-      // rotate a little based on how far it's dragged
-      const rotation = deltaX / 20; // control rotation factor
+
+      // rotate slightly based on drag
+      const rotation = deltaX / 20;
 
       card.style.transform = `translate(${deltaX}px, ${deltaY}px) rotate(${rotation}deg)`;
 
-      // adjust label opacity
-      const likeOpacity = deltaX > 0 ? Math.min(deltaX / 100, 1) : 0;
-      const dislikeOpacity = deltaX < 0 ? Math.min(-deltaX / 100, 1) : 0;
-      likeLabel.style.opacity = likeOpacity;
-      dislikeLabel.style.opacity = dislikeOpacity;
+      // label opacity
+      likeLabel.style.opacity = deltaX > 0 ? Math.min(deltaX / 100, 1) : 0;
+      dislikeLabel.style.opacity = deltaX < 0 ? Math.min(-deltaX / 100, 1) : 0;
     });
 
     mc.on("panend", (ev) => {
       const deltaX = ev.deltaX;
       const absDeltaX = Math.abs(deltaX);
-      const threshold = 100; // px threshold to commit swipe
+      const threshold = 100; // commit swipe
 
       card.style.transition = "transform 0.3s ease-out";
 
       if (absDeltaX > threshold) {
-        // Swipe committed
         const direction = deltaX > 0 ? "right" : "left";
         const endX = direction === "right" ? window.innerWidth : -window.innerWidth;
         const endRotation = direction === "right" ? 30 : -30;
 
         card.style.transform = `translate(${endX}px, ${ev.deltaY}px) rotate(${endRotation}deg)`;
 
-        // After animation, remove card
         setTimeout(() => {
           const idx = Number(card.dataset.index);
+
           if (direction === "right") {
             liked.push(catImages[idx]);
           }
+
           card.remove();
           currentIndex++;
+
+          updateProgress();
+
           if (currentIndex >= catImages.length) {
             showSummary();
           }
         }, 300);
 
       } else {
-        // Cancel swipe — reset
+        // reset
         card.style.transform = "";
         likeLabel.style.opacity = 0;
         dislikeLabel.style.opacity = 0;
@@ -103,12 +102,12 @@ function renderCards() {
   }
 }
 
-
 function updateProgress() {
   document.getElementById("current").textContent = Math.min(
     currentIndex + 1,
     TOTAL_CATS
-);
+  );
+}
 
 function showSummary() {
   document.getElementById("summary").classList.remove("hidden");
@@ -126,6 +125,3 @@ function showSummary() {
 
 // Initialize
 loadCats();
-
-}
-
