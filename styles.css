@@ -1,5 +1,3 @@
-/* styles.css (FINAL VERSION) */
-
 :root{
   --bg: #ffe6ee;
   --card-bg: #fff;
@@ -76,9 +74,8 @@ body {
 #card-container {
   position: relative;
   width: 100%;
-  height: 60vh; 
-  min-height: 380px; 
-  max-height: 500px;
+  /* FIX: Fixed height for absolute positioning stability */
+  height: 460px; 
   margin: 0 auto;
   touch-action: pan-y;
   -webkit-tap-highlight-color: transparent;
@@ -88,7 +85,8 @@ body {
 .card {
   position: absolute;
   width: 90%;
-  height: 95%; 
+  /* FIX: Fixed height for absolute positioning stability */
+  height: 430px; 
   left: 50%;
   top: 0;
   transform: translateX(-50%);
@@ -104,7 +102,7 @@ body {
   overflow: hidden;
 }
 
-/* stacked offset for visible depth - Desktop/Default */
+/* stacked offset for visible depth */
 .card:nth-last-child(2){ transform: translateX(-50%) translateY(8px) scale(0.99); }
 .card:nth-last-child(3){ transform: translateX(-50%) translateY(16px) scale(0.98); }
 
@@ -183,11 +181,7 @@ body {
 
 /* responsive tweaks */
 @media (max-width:420px){
-  .card{ width:92%; } 
-  #card-container{ min-height: 380px; }
+  .card{ width:92%; height: 380px; } 
+  #card-container{ height: 420px; }
   .action-btn{ width:56px; height:56px; }
-    
-  /* FIX: Adjust offsets to make stacking CLEARER on small screens */
-  .card:nth-last-child(2){ transform: translateX(-50%) translateY(6px) scale(0.98); }
-  .card:nth-last-child(3){ transform: translateX(-50%) translateY(12px) scale(0.96); }
 }
