@@ -75,7 +75,6 @@ h1 {
   background-position: center;
   box-shadow: 0 5px 15px rgba(0,0,0,0.2);
   transition: transform 0.3s ease-out;
-  background: red !important;
 }
 
 .hidden {
