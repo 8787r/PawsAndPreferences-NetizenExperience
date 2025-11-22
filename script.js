@@ -1,7 +1,8 @@
-/* Paws & Preferences — Upgraded & Debugged for Mobile */
+/* Paws & Preferences — upgraded with fixes for mobile/undo indexing errors. */
 
 const TOTAL_CATS = 12;
-let catImages = [];
+let originalCatImages = []; // Full list of 12 images (fixed)
+let catImages = [];         // Dynamic stack of images yet to be swiped (changing)
 let liked = [];
 let historyStack = [];      // to support undo: each item {url, liked:boolean}
 
@@ -21,17 +22,23 @@ const darkToggle = document.getElementById("dark-toggle");
 
 totalEl.textContent = TOTAL_CATS;
 
+// Preload a fixed set of secure HTTPS images
 function buildImageList() {
-  catImages = [];
+  originalCatImages = [];
   for (let i = 0; i < TOTAL_CATS; i++) {
-    catImages.push(`https://cataas.com/cat?random=${Date.now()}-${Math.random()}`);
+    // use unique query to avoid caching
+    originalCatImages.push(`https://cataas.com/cat?random=${Date.now()}-${Math.random()}`);
   }
+  // Start the dynamic stack with a copy of the original list
+  catImages = [...originalCatImages];
 }
 
-function createCard(url) {
+// Helper: create a single card element
+function createCard(url) { // Removed 'index' argument as it's no longer reliable/needed
   const card = document.createElement("div");
   card.className = "card";
   card.style.backgroundImage = `url(${url})`;
+  // card.dataset.index = index;  // Removed: We don't rely on dataset.index anymore
 
   const likeLabel = document.createElement("div");
   likeLabel.className = "label like";
@@ -43,13 +50,8 @@ function createCard(url) {
   dislikeLabel.textContent = "NOPE";
   card.appendChild(dislikeLabel);
 
-  // FIX: Explicitly configure Hammer for mobile horizontal swiping
-  const mc = new Hammer(card, {
-    inputClass: Hammer.TouchInput,
-    recognizers: [
-      [Hammer.Pan, { direction: Hammer.DIRECTION_HORIZONTAL }]
-    ]
-  });
+  // attach Hammer pan to each card
+  const mc = new Hammer(card);
   mc.add(new Hammer.Pan({ threshold: 6 }));
 
   mc.on("panstart", () => {
@@ -62,6 +64,7 @@ function createCard(url) {
     const rotate = dx / 18;
     card.style.transform = `translate(${dx}px, ${dy}px) rotate(${rotate}deg)`;
 
+    // show label opacity
     likeLabel.style.opacity = dx > 0 ? Math.min(dx / 120, 1) : 0;
     dislikeLabel.style.opacity = dx < 0 ? Math.min(-dx / 120, 1) : 0;
   });
@@ -80,17 +83,21 @@ function createCard(url) {
       const rot = isLike ? 30 : -30;
       card.style.transform = `translate(${offX}px, ${dy}px) rotate(${rot}deg)`;
 
+      // record decision then remove after animation
       setTimeout(() => {
-        const currentURL = catImages.shift();
         
-        if (isLike) liked.push(currentURL);
-        historyStack.push({ url: currentURL, liked: isLike });
+        // FIX: Get the URL and remove it from the start of the dynamic catImages array
+        const swipedUrl = catImages.shift(); 
         
+        if (isLike) liked.push(swipedUrl);
+        historyStack.push({ url: swipedUrl, liked: isLike });
         card.remove();
-        updateProgress();
-        if (catImages.length === 0) showSummary();
+        
+        updateProgress(); // Update progress based on historyStack length
+        if (catImages.length === 0) showSummary(); // Check remaining cards
       }, 260);
     } else {
+      // snap back
       card.style.transform = "";
       likeLabel.style.opacity = 0;
       dislikeLabel.style.opacity = 0;
@@ -100,65 +107,69 @@ function createCard(url) {
   return card;
 }
 
+// Render stack (top card last appended)
 function renderCards() {
   container.innerHTML = "";
-  // Iterate forwards. Last child is visually on top.
-  for (let i = 0; i < catImages.length; i++) {
+  // Renders the remaining cards in the dynamic catImages array
+  for (let i = catImages.length - 1; i >= 0; i--) {
     const card = createCard(catImages[i]);
     container.appendChild(card);
   }
 }
 
+// Programmatically trigger a swipe (used by buttons)
 function swipeTopCard(isLike) {
-  const top = container.querySelector(".card:last-child");
+  const top = container.querySelector(".card");
   if (!top) return;
-  
   const dy = 0;
   const offX = isLike ? window.innerWidth : -window.innerWidth;
   const rot = isLike ? 30 : -30;
   top.style.transition = "transform 260ms cubic-bezier(.22,.9,.3,1)";
   top.style.transform = `translate(${offX}px, ${dy}px) rotate(${rot}deg)`;
-  
   setTimeout(() => {
-    const currentURL = catImages.shift();
+    // FIX: Get the URL and remove it from the start of the dynamic catImages array
+    const swipedUrl = catImages.shift();
     
-    if (isLike) liked.push(currentURL);
-    historyStack.push({ url: currentURL, liked: isLike });
-    
+    if (isLike) liked.push(swipedUrl);
+    historyStack.push({ url: swipedUrl, liked: isLike });
     top.remove();
+    
     updateProgress();
     if (catImages.length === 0) showSummary();
   }, 260);
 }
 
+// Undo last swipe
 function undoLast() {
   if (historyStack.length === 0) return;
   const last = historyStack.pop();
-  
+
+  // FIX: Re-insert the URL at the beginning of the dynamic catImages array
+  catImages.unshift(last.url); 
+
+  // remove from liked if it was liked
   if (last.liked) {
     const idx = liked.lastIndexOf(last.url);
     if (idx !== -1) liked.splice(idx, 1);
   }
-  
-  catImages.unshift(last.url);
-  
+
   renderCards();
   updateProgress();
-  summaryEl.classList.add("hidden");
+  summaryEl.classList.add("hidden"); // hide summary if visible
 }
 
+// Progress UI updates
 function updateProgress() {
   const total = TOTAL_CATS;
-  const cardsProcessed = historyStack.length;
+  // FIX: Use historyStack.length for accurate progress count
+  const currentCount = historyStack.length; 
   
-  currentEl.textContent = Math.min(cardsProcessed + 1, total);
-  
-  const percent = Math.min((cardsProcessed / total) * 100, 100);
+  currentEl.textContent = Math.min(currentCount + 1, total);
+  const percent = Math.min((currentCount / total) * 100, 100);
   progressLine.style.width = `${percent}%`;
-
-  btnUndo.disabled = cardsProcessed === 0;
 }
 
+// Show summary
 function showSummary() {
   summaryEl.classList.remove("hidden");
   likeCountEl.textContent = liked.length;
@@ -170,29 +181,45 @@ function showSummary() {
   });
 }
 
+// Restart app
 function restartAll() {
   liked = [];
   historyStack = [];
-  buildImageList();
+  buildImageList(); // Re-initialize catImages from originalCatImages
   renderCards();
   updateProgress();
   summaryEl.classList.add("hidden");
 }
 
+// Dark mode toggling (persist using localStorage)
 function initDarkMode() {
   const saved = localStorage.getItem("paws-dark");
-  if (saved === "1") document.body.classList.add("dark");
+  const isDark = saved === "1";
+
+  if (isDark) {
+    document.body.classList.add("dark");
+    darkToggle.textContent = "☀️"; // Set sun icon
+  } else {
+    darkToggle.textContent = "🌙"; // Set moon icon
+  }
+  
   darkToggle.addEventListener("click", () => {
     document.body.classList.toggle("dark");
-    localStorage.setItem("paws-dark", document.body.classList.contains("dark") ? "1" : "0");
+    const nowDark = document.body.classList.contains("dark");
+    localStorage.setItem("paws-dark", nowDark ? "1" : "0");
+    
+    // FIX: Update icon on click
+    darkToggle.textContent = nowDark ? "☀️" : "🌙";
   });
 }
 
+// Attach UI button listeners
 btnLike.addEventListener("click", () => swipeTopCard(true));
 btnDislike.addEventListener("click", () => swipeTopCard(false));
 btnUndo.addEventListener("click", undoLast);
 btnRestart.addEventListener("click", restartAll);
 
+// init
 buildImageList();
 renderCards();
 updateProgress();
